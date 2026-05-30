@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 0.1 Authentication check with verification
+    function isVerified() {
+      return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'google.com');
+    }
+
+    // Phase 2: Schema Validations
+    function isValidUserProfile(data) {
+      // More relaxed schema for troubleshooting
+      return (data.get('role', 'user') in ['user', 'admin']) &&
+             (data.get('displayName', '') is string) &&
+             (data.get('photoURL', null) == null || data.photoURL is string) &&
+             (data.get('updatedAt', null) == null || data.updatedAt is timestamp || data.updatedAt == request.time);
+    }
+
+    function isValidPrivateInfo(data) {
+      return data.keys().hasAll(['email']) && 
+             data.email is string && data.email.size() <= 200;
+    }
+
+    function isValidJournalEntry(data) {
+      return data.keys().hasAll(['originalText', 'kintsugiReflection', 'createdAt']) &&
+             data.originalText is string && 
+             data.kintsugiReflection is string && 
+             data.createdAt == request.time;
+    }
+
+    function isValidWellnessStats(data) {
+      return data.keys().hasAll(['breathingScore', 'gardenBloom', 'lastUpdated']) &&
+             data.breathingScore is number && 
+             data.gardenBloom is number && 
+             data.lastUpdated == request.time;
+    }
+
+    function isValidFavorite(data) {
+      return data.keys().hasAll(['type', 'name', 'activeTypes', 'volumes', 'createdAt']) &&
+             data.type == 'soundscape' &&
+             data.name is string && data.name.size() <= 200 &&
+             data.activeTypes is list &&
+             data.volumes is map &&
+             data.createdAt == request.time;
+    }
+
+    // Phase 4: Match Blocks
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && 
+                      incoming().keys().hasAll(['role', 'createdAt']) && 
+                      isValidUserProfile(incoming()) && 
+                      incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && 
+                      isValidUserProfile(incoming()) &&
+                      (incoming().get('role', 'user') == existing().get('role', 'user')) && 
+                      (incoming().get('createdAt', request.time) == existing().get('createdAt', request.time));
+
+      match /private/info {
+        allow get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidPrivateInfo(incoming());
+      }
+
+      match /journal/{entryId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(entryId) && isValidJournalEntry(incoming());
+        allow update, delete: if false; // Journal entries are immutable for integrity
+      }
+
+      match /stats/current {
+        allow get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidWellnessStats(incoming());
+      }
+
+      match /favorites/{favoriteId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidFavorite(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

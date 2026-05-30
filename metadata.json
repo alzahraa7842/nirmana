@@ -1,0 +1,11 @@
+{
+  "name": "Nirmana: The Kintsugi Protocol",
+  "description": "An AI-powered immersive wellness companion for emotional restoration and behavioral mindfulness.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": [
+    "AI Emotional Reflection",
+    "Breathing Authentication",
+    "Recovery Garden Visualization",
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

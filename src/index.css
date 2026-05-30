@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,400;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-gold: #D4AF37;
+  --color-cyan-glow: #00f2ff;
+  --color-deep-slate: #0a0c10;
+  
+  --color-glass: rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-deep-slate text-slate-200 cursor-default;
+  }
+}
+
+.aurora-bg {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(0, 242, 255, 0.05) 0%, transparent 25%),
+              radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 30%),
+              radial-gradient(circle at 50% 50%, rgba(20, 20, 30, 1) 0%, transparent 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.glass-panel {
+  @apply backdrop-blur-[20px] bg-glass border border-glass-border rounded-[24px];
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}

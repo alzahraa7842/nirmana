@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Public user information and authentication roles.",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string", "description": "The user's chosen name." },
+        "photoURL": { "type": "string", "format": "uri", "description": "URL to the user's profile picture." },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "The user's access level." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the profile was created." },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["role", "createdAt"]
+    },
+    "PrivateUserInfo": {
+      "title": "Private User Info",
+      "description": "Sensitive user data like email.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "The user's unique email address." }
+      },
+      "required": ["email"]
+    },
+    "JournalEntry": {
+      "title": "Journal Entry",
+      "description": "An emotional journal record with AI reflection.",
+      "type": "object",
+      "properties": {
+        "originalText": { "type": "string", "description": "The user's raw emotional input." },
+        "kintsugiReflection": { "type": "string", "description": "The AI's restorative rewrite." },
+        "sentiment": { "type": "string", "description": "Detected emotional state." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["originalText", "kintsugiReflection", "createdAt"]
+    },
+    "WellnessStats": {
+      "title": "Wellness Stats",
+      "description": "Real-time metrics for dashboard and garden.",
+      "type": "object",
+      "properties": {
+        "breathingScore": { "type": "number", "description": "Average resonance score." },
+        "emotionalWeather": { "type": "string" },
+        "gardenBloom": { "type": "number", "description": "0-100 percentage of growth." },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["breathingScore", "gardenBloom", "lastUpdated"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "User's saved favorites like soundscape configurations.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["soundscape"] },
+        "name": { "type": "string" },
+        "activeTypes": { "type": "array", "items": { "type": "string" } },
+        "volumes": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "name", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles and roles."
+    },
+    "/users/{userId}/private/info": {
+      "schema": "PrivateUserInfo",
+      "description": "Restricted private user data."
+    },
+    "/users/{userId}/journal/{entryId}": {
+      "schema": "JournalEntry",
+      "description": "Personal emotional record history."
+    },
+    "/users/{userId}/stats/current": {
+      "schema": "WellnessStats",
+      "description": "Current snapshot of wellness metrics."
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": "Favorite",
+      "description": "Saved wellness configurations."
+    }
+  }
+}
